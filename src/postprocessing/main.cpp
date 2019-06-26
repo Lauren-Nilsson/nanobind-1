@@ -28,9 +28,10 @@ int main() {
    
    cout << "Analysis file will be saved to " << fileName << ".processed" << endl;
    ofstream processedData( (fileName+".processed").c_str() );
+   ofstream pairData( (fileName+".gofr").c_str() );
  
    string dummy;                                     //dummy string for text in file
-   double atomNumber;                                //total number of atoms, counting wall particles
+   long double atomNumber;                                //total number of atoms, counting wall particles
    vector<VECTOR3D> vlpXYZ;                          //virus particles coordinates
    vector<VECTOR3D> ligandXYZ;
    vector<VECTOR3D> wallXYZ;
@@ -42,18 +43,29 @@ int main() {
    double boxLength;
    VECTOR3D dist;
    int bondedWall;
+   vector <int> pairCorrelation;
    
    int i = 0;
    while (crds.get())
    {
+      if (crds.eof())                      // check for EOF
+      {
+         cout << "End of file reached after " << i << " timesteps." << endl;
+         crds.close();                        // close file
+         break;
+      } 
       
       crds >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy ;   //reading the header of the timestep
       crds >> atomNumber;
       crds >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy ;
       crds >> dummy >> boxLength >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
       
+      
       if (i == 0) //for first timestep, push back ligands, vlp and wall mesh particles
       {
+         
+         cout << "Processing " << atomNumber << " atoms..." << endl;
+         
          for (int j = 0; j < atomNumber; j++)
          {
             crds >> index >> type >> x >> y >> z;
@@ -61,11 +73,15 @@ int main() {
             if (type == 2 ) ligandXYZ.push_back(VECTOR3D(x,y,z)); //if it is a ligand
             if (type == 3 ) wallXYZ.push_back(VECTOR3D(x,y,z)); //if it is a wall mesh particle
          }
+         cout << vlpXYZ.size() << " viruses, " << ligandXYZ.size() << " ligands, " << wallXYZ.size() << " wall particles." << endl;
+         
+         pairCorrelation.resize( ceil(boxLength) );
          
       } else {
-         double vlpIndex = 0;
-         double ligandIndex = 0;
-         double wallIndex = 0;
+         // cout << "Reached timestep " << i << endl;
+         int vlpIndex = 0;
+         int ligandIndex = 0;
+         int wallIndex = 0;
          
          for (int j = 0; j < atomNumber; j++)
          {
@@ -114,6 +130,30 @@ int main() {
                }
             }
             processedData << i << "  " << bondedWall << "  " << wallXYZ.size() << endl; //print how many receptor are bound out of total for all timesteps
+            
+            for (int j = 0; j < ceil(boxLength); j++)
+            {
+               pairCorrelation[j] = 0;
+            }
+            
+            pairData << endl << i << "  " ;
+            
+            for (int j = 0; j < ligandXYZ.size(); j++)
+            {
+               for (int k = 0; k < ceil(boxLength); k++)
+               {
+                  if (ligandXYZ[j].z < k)
+                  {
+                     pairCorrelation[k] += 1;
+                     break;
+                  } // end if
+               } //end bin loop
+            } // end ligand loop
+            
+            for (int k = 0; k < ceil(boxLength); k++)
+            {
+               pairData << pairCorrelation[k] << "  " ;
+            }
          } //end if
       } // end else; after first timestep
       

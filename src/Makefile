@@ -15,6 +15,7 @@ C=9
 S=108 
 w=100
 T=275
+R=60
 NODESIZE=4
 
 all:

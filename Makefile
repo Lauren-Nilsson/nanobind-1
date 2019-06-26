@@ -15,6 +15,7 @@ C=9
 S=108 
 W=100
 T=275
+R=60
 NODESIZE=4
 MPI_EXE=mpirun
 LAMMPS_EXE=lmp_g++
@@ -59,7 +60,7 @@ cluster-submit:
 
 local-run-parallel:
 	@echo "Running the preprocessor to create lammps script."
-	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) W=$(W) T=$(T)
+	+$(MAKE) -C $(BIN) run-preprocessor E=$(E) C=$(C) S=$(S) W=$(W) T=$(T) R=$(R)
 	@echo "Running the preprocessor is over."
 	+$(MAKE) -C $(BIN) run-local-parallel NODESIZE=$(NODESIZE) MPI_EXE=$(MPI_EXE) LAMMPS_EXE=$(LAMMPS_EXE)
 

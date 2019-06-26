@@ -7,12 +7,13 @@ C=9
 S=108 
 w=100
 T=275
+R=60
 NODESIZE=4
 MPI_EXE=mpirun
 LAMMPS_EXE=lmp_g++
 
 run-preprocessor:
-	./preprocessor -E $(E) -C $(C) -S $(S) -w $(w) -T $(T)
+	./preprocessor -E $(E) -C $(C) -S $(S) -w $(w) -T $(T) -R $(R)
 
 submit: 
 	@echo "Launching the job";
